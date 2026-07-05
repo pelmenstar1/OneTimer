@@ -1,4 +1,4 @@
-package com.pelmenstar.onetimer.screens.home
+package com.pelmenstar.onetimer.activities.main.screens.home
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -15,11 +15,13 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.TextUnitType
 import androidx.compose.ui.unit.dp
+import com.pelmenstar.onetimer.external.alarm.scheduleAlarm
 import com.pelmenstar.onetimer.ui.components.CircularSelect
 import com.pelmenstar.onetimer.utils.formatTime
 
@@ -28,8 +30,11 @@ const val MAX_HOURS = 4
 const val TOTAL_MINUTES = (MAX_HOURS * 60).toFloat()
 
 @Composable
-fun HomeScreen() {
+fun HomeScreen(
+  onRequirePermission: () -> Unit = {}
+) {
   var minutes by rememberSaveable { mutableIntStateOf(0) }
+  val context = LocalContext.current
 
   Column(
     horizontalAlignment = Alignment.CenterHorizontally,
@@ -60,7 +65,12 @@ fun HomeScreen() {
       )
     }
 
-    Button(onClick = {}) {
+    Button(onClick = {
+      val isSuccess = scheduleAlarm(context, minutes)
+      if (!isSuccess) {
+        onRequirePermission()
+      }
+    }) {
       Text(text = "Set an alarm")
     }
   }

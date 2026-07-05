@@ -1,3 +1,7 @@
 <resources>
-    <string name="app_name">One Timer</string>
+  <string name="app_name">One Timer</string>
+  <string name="title_activity_alarm">AlarmActivity</string>
+  <string name="alarm_notification_channel_name">Alarms</string>
+  <string name="alarm_notification_title">Alarm</string>
+  <string name="alarm_notification_text">Tap to view alarm</string>
 </resources>

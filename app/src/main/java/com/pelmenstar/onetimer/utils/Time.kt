@@ -1,5 +1,8 @@
 package com.pelmenstar.onetimer.utils
 
+const val MS_IN_SECOND = 1000;
+const val MS_IN_MINUTE = 60 * MS_IN_SECOND
+
 private fun StringBuilder.appendTwoDigits(value: Int) {
   if (value < 10) {
     append('0')
