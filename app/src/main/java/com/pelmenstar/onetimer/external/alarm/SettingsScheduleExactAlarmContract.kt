@@ -24,7 +24,6 @@ class SettingsScheduleExactAlarmContract :
     resultCode: Int,
     intent: Intent?
   ): Boolean {
-    println("Settings result $resultCode")
     return resultCode == Activity.RESULT_OK
   }
 }

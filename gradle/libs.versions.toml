@@ -7,11 +7,11 @@ espressoCore = "3.7.0"
 lifecycleRuntimeKtx = "2.11.0"
 activityCompose = "1.13.0"
 kotlin = "2.4.0"
-composeBom = "2026.06.00"
+composeBom = "2026.06.01"
 nav3Core = "1.1.4"
 lifecycleViewmodelNav3 = "2.11.0"
-kotlinSerialization = "2.2.21"
-kotlinxSerializationCore = "1.9.0"
+kotlinSerialization = "2.4.0"
+kotlinxSerializationCore = "1.11.0"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }

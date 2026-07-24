@@ -28,7 +28,7 @@ fun scheduleAlarm(context: Context, futureMinutes: Int): Boolean {
   )
 
   val now = SystemClock.elapsedRealtime()
-  val triggerAt = now + 1000
+  val triggerAt = now + durationMs
 
   manager.setExact(
     AlarmManager.ELAPSED_REALTIME_WAKEUP,

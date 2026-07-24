@@ -18,8 +18,6 @@ class AlarmService : Service() {
   override fun onBind(intent: Intent?): IBinder? = null
 
   override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
-    println("Service")
-
     createNotificationChannel()
     val notification = createNotification()
 
