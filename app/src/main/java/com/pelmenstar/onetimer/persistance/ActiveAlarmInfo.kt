@@ -7,6 +7,7 @@ import androidx.room.PrimaryKey
 @Entity(tableName = "active_alarm_info")
 data class ActiveAlarmInfo(
   @PrimaryKey val id: Int,
+  /** A [System.currentTimeMillis] based time the alarm is expected to go off at. */
   @ColumnInfo(name = "target_time") val targetTime: Long,
 ) {
   companion object {

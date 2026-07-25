@@ -1,7 +1,5 @@
 package com.pelmenstar.onetimer.activities.main.screens.home
 
-import android.os.SystemClock
-import android.text.format.DateFormat
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxHeight
@@ -11,10 +9,9 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -33,8 +30,9 @@ import com.pelmenstar.onetimer.flow.AlarmFlow
 import com.pelmenstar.onetimer.persistance.ActiveAlarmInfo
 import com.pelmenstar.onetimer.ui.components.CircularSelect
 import com.pelmenstar.onetimer.utils.formatTime
+import com.pelmenstar.onetimer.utils.formatTimeFromWallTime
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
-import java.util.Date
 
 const val MAX_HOURS = 4
 
@@ -55,13 +53,13 @@ private fun ActiveAlarmInfo?.toAlarmState(): AlarmState {
 fun HomeScreen(
   onRequirePermission: () -> Unit = {}
 ) {
-  var state by remember { mutableStateOf<AlarmState>(AlarmState.Loading) }
   val scope = rememberCoroutineScope()
   val context = LocalContext.current
 
-  LaunchedEffect(Unit) {
-    state = AlarmFlow.getActive(context).toAlarmState()
+  val stateFlow = remember(context) {
+    AlarmFlow.getActiveFlow(context).map { it.toAlarmState() }
   }
+  val state by stateFlow.collectAsState(initial = AlarmState.Loading)
 
   Column(
     modifier = Modifier.fillMaxWidth(),
@@ -76,8 +74,6 @@ fun HomeScreen(
         onCancel = {
           scope.launch {
             AlarmFlow.clear(context)
-
-            state = AlarmState.NotSet
           }
         }
       )
@@ -85,11 +81,7 @@ fun HomeScreen(
       AlarmState.NotSet -> AlarmSetup(
         onSchedule = { minutes ->
           scope.launch {
-            val alarmInfo = AlarmFlow.schedule(context, minutes)
-
-            if (alarmInfo != null) {
-              state = alarmInfo.toAlarmState()
-            } else {
+            if (AlarmFlow.schedule(context, minutes) == null) {
               onRequirePermission()
             }
           }
@@ -143,12 +135,8 @@ private fun ScheduledAlarm(
 ) {
   val context = LocalContext.current
 
-  // targetTime is based on SystemClock.elapsedRealtime(), convert it to the wall clock.
   val targetText = remember(info) {
-    val wallTime =
-      System.currentTimeMillis() + (info.targetTime - SystemClock.elapsedRealtime())
-
-    DateFormat.getTimeFormat(context).format(Date(wallTime))
+    formatTimeFromWallTime(context, info.targetTime)
   }
 
   Text(

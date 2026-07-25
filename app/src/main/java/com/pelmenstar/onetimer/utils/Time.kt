@@ -1,5 +1,9 @@
 package com.pelmenstar.onetimer.utils
 
+import android.content.Context
+import android.text.format.DateFormat
+import java.util.Date
+
 const val MS_IN_SECOND = 1000
 const val MS_IN_MINUTE = 60 * MS_IN_SECOND
 
@@ -20,4 +24,8 @@ fun formatTime(minutes: Int): String {
     append(':')
     appendTwoDigits(minutes)
   }
+}
+
+fun formatTimeFromWallTime(context: Context, timeMs: Long): String {
+  return DateFormat.getTimeFormat(context).format(Date(timeMs))
 }

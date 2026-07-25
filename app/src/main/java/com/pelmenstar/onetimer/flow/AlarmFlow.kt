@@ -4,8 +4,10 @@ import android.content.Context
 import android.util.Log
 import com.pelmenstar.onetimer.external.alarm.cancelScheduledAlarm
 import com.pelmenstar.onetimer.external.alarm.scheduleAlarm
+import com.pelmenstar.onetimer.external.tile.requestAlarmTileUpdate
 import com.pelmenstar.onetimer.persistance.ActiveAlarmInfo
 import com.pelmenstar.onetimer.persistance.getAppDatabase
+import kotlinx.coroutines.flow.Flow
 
 object AlarmFlow {
   private const val TAG = "AlarmFlow"
@@ -14,32 +16,41 @@ object AlarmFlow {
     return getAppDatabase(context).activeAlarmDao().getActiveAlarm()
   }
 
+  /**
+   * Returns a flow that emits the current alarm and then each time the alarm is changed,
+   * no matter who changed it.
+   */
+  fun getActiveFlow(context: Context): Flow<ActiveAlarmInfo?> {
+    return getAppDatabase(context).activeAlarmDao().getActiveAlarmFlow()
+  }
+
+  suspend fun hasActiveAlarm(context: Context): Boolean {
+    return getAppDatabase(context).activeAlarmDao().activeAlarmCount() > 0
+  }
+
   suspend fun schedule(context: Context, futureMinutes: Int): ActiveAlarmInfo? {
-    val scheduledInfo = scheduleAlarm(context, futureMinutes)
+    val scheduledInfo = scheduleAlarm(context, futureMinutes) ?: return null
 
-    if (scheduledInfo != null) {
-      val alarmDao = getAppDatabase(context).activeAlarmDao()
+    val alarmDao = getAppDatabase(context).activeAlarmDao()
 
+    try {
+      val activeInfo = ActiveAlarmInfo(
+        ActiveAlarmInfo.DEFAULT_ID, scheduledInfo.triggerAtWallTime
+      )
+
+      alarmDao.setActiveAlarm(activeInfo)
+      requestAlarmTileUpdate(context)
+
+      return activeInfo
+    } catch (e: Exception) {
       try {
-        val activeInfo = ActiveAlarmInfo(
-          ActiveAlarmInfo.DEFAULT_ID, scheduledInfo.triggerAt
-        )
-
-        alarmDao.setActiveAlarm(activeInfo)
-
-        return activeInfo
-      } catch (e: Exception) {
-        try {
-          clear(context)
-        } catch (_: Exception) {
-          // We did our best to return to valid state
-        }
-
-        throw e
+        clear(context)
+      } catch (_: Exception) {
+        // We did our best to return to valid state
       }
-    }
 
-    return null
+      throw e
+    }
   }
 
   suspend fun clear(context: Context) {
@@ -53,6 +64,8 @@ object AlarmFlow {
     if (rowsDeleted <= 0) {
       Log.w(TAG, "No active alarm was found")
     }
+
+    requestAlarmTileUpdate(context)
   }
 
   suspend fun onAlarmReceived(context: Context) {

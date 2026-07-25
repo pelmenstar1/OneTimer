@@ -4,4 +4,6 @@
   <string name="alarm_notification_channel_name">Alarms</string>
   <string name="alarm_notification_title">Alarm</string>
   <string name="alarm_notification_text">Tap to view alarm</string>
+  <string name="tile_alarm_label">One Timer</string>
+  <string name="tile_alarm_subtitle_not_set">No alarm</string>
 </resources>

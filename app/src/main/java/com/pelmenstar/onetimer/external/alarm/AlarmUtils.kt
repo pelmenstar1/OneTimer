@@ -8,7 +8,8 @@ import android.os.Build
 import android.os.SystemClock
 import com.pelmenstar.onetimer.utils.MS_IN_MINUTE
 
-data class ScheduledAlarmInfo(val triggerAt: Long)
+/** [triggerAtWallTime] is a [System.currentTimeMillis] based time. */
+data class ScheduledAlarmInfo(val triggerAtWallTime: Long)
 
 private fun getAlarmManager(context: Context): AlarmManager {
   return context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
@@ -37,16 +38,15 @@ fun scheduleAlarm(context: Context, futureMinutes: Int): ScheduledAlarmInfo? {
 
   val pendingIntent = getBroadcastPendingIntent(context)
 
-  val now = SystemClock.elapsedRealtime()
-  val triggerAt = now + durationMs
-
+  // The alarm itself is scheduled on the monotonic clock, so that changing
+  // the system time does not shift it.
   manager.setExact(
     AlarmManager.ELAPSED_REALTIME_WAKEUP,
-    triggerAt,
+    SystemClock.elapsedRealtime() + durationMs,
     pendingIntent
   )
 
-  return ScheduledAlarmInfo(triggerAt)
+  return ScheduledAlarmInfo(System.currentTimeMillis() + durationMs)
 }
 
 fun cancelScheduledAlarm(context: Context) {
