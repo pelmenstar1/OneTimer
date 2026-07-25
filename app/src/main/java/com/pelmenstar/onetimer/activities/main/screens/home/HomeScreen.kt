@@ -25,22 +25,18 @@ import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.TextUnitType
 import androidx.compose.ui.unit.dp
 import com.pelmenstar.onetimer.flow.AlarmFlow
+import com.pelmenstar.onetimer.flow.SettingsFlow
 import com.pelmenstar.onetimer.persistance.ActiveAlarmInfo
-import com.pelmenstar.onetimer.ui.components.MIN_MINUTES
 import com.pelmenstar.onetimer.ui.components.MinutesSelect
 import com.pelmenstar.onetimer.utils.formatTimeFromWallTime
-import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.launch
 
 private sealed interface AlarmState {
   // Until we know for sure, the alarm is considered to be set.
   data object Loading : AlarmState
-  data object NotSet : AlarmState
+  data class NotSet(val lastSelectedMinutes: Int) : AlarmState
   data class Set(val info: ActiveAlarmInfo) : AlarmState
-}
-
-private fun ActiveAlarmInfo?.toAlarmState(): AlarmState {
-  return if (this == null) AlarmState.NotSet else AlarmState.Set(this)
 }
 
 @Composable
@@ -50,8 +46,19 @@ fun HomeScreen(
   val scope = rememberCoroutineScope()
   val context = LocalContext.current
 
+  // The state is Loading until both the alarm and the settings are known, so that
+  // the selector is not shown with a stale amount of minutes.
   val stateFlow = remember(context) {
-    AlarmFlow.getActiveFlow(context).map { it.toAlarmState() }
+    combine(
+      AlarmFlow.getActiveFlow(context),
+      SettingsFlow.getFlow(context)
+    ) { info, settings ->
+      if (info == null) {
+        AlarmState.NotSet(settings.lastSelectedMinutes)
+      } else {
+        AlarmState.Set(info)
+      }
+    }
   }
   val state by stateFlow.collectAsState(initial = AlarmState.Loading)
 
@@ -72,10 +79,13 @@ fun HomeScreen(
         }
       )
 
-      AlarmState.NotSet -> AlarmSetup(
+      is AlarmState.NotSet -> AlarmSetup(
+        initialMinutes = currentState.lastSelectedMinutes,
         onSchedule = { minutes ->
           scope.launch {
-            if (AlarmFlow.schedule(context, minutes) == null) {
+            if (AlarmFlow.schedule(context, minutes) != null) {
+              SettingsFlow.setLastSelectedMinutes(context, minutes)
+            } else {
               onRequirePermission()
             }
           }
@@ -87,9 +97,14 @@ fun HomeScreen(
 
 @Composable
 private fun AlarmSetup(
+  initialMinutes: Int,
   onSchedule: (minutes: Int) -> Unit
 ) {
-  var minutes by rememberSaveable { mutableIntStateOf(MIN_MINUTES) }
+  var minutes by rememberSaveable(initialMinutes) {
+    mutableIntStateOf(
+      initialMinutes
+    )
+  }
 
   MinutesSelect(
     modifier = Modifier

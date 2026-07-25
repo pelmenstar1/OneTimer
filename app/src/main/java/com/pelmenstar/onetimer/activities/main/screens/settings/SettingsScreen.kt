@@ -28,7 +28,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.pelmenstar.onetimer.R
 import com.pelmenstar.onetimer.flow.SettingsFlow
-import com.pelmenstar.onetimer.persistance.AppSettings
+import com.pelmenstar.onetimer.persistance.AppSettingsEntry
 import com.pelmenstar.onetimer.ui.components.MinutesSelect
 import com.pelmenstar.onetimer.utils.formatTime
 import kotlinx.coroutines.launch
@@ -42,7 +42,9 @@ fun SettingsScreen() {
   val settings by settingsFlow.collectAsState(initial = null)
 
   var isSelectingMinutes by remember { mutableStateOf(false) }
-  var draftMinutes by remember { mutableIntStateOf(AppSettings.DEFAULT_TILE_ALARM_MINUTES) }
+  var draftMinutes by remember {
+    mutableIntStateOf(AppSettingsEntry.DEFAULT_TILE_ALARM_MINUTES)
+  }
 
   val currentSettings = settings
 

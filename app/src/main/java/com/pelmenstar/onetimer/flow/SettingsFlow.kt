@@ -2,20 +2,66 @@ package com.pelmenstar.onetimer.flow
 
 import android.content.Context
 import com.pelmenstar.onetimer.persistance.AppSettings
+import com.pelmenstar.onetimer.persistance.AppSettingsEntry
 import com.pelmenstar.onetimer.persistance.getAppDatabase
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 
 object SettingsFlow {
+  private fun findEntryValue(
+    entries: Array<AppSettingsEntry>,
+    key: String
+  ): String? {
+    return entries.find { it.key == key }?.value
+  }
+
+  private inline fun <T> findEntry(
+    entries: Array<AppSettingsEntry>,
+    key: String,
+    defaultValue: T,
+    parse: (value: String) -> T
+  ): T {
+    val value = findEntryValue(entries, key)
+    if (value != null) {
+      return parse(value)
+    }
+
+    return defaultValue
+  }
+
+  private fun parseEntriesToSettings(entries: Array<AppSettingsEntry>): AppSettings {
+    val tileAlarmMinutes = findEntry(
+      entries,
+      AppSettingsEntry.KEY_TILE_ALARM_MINUTES,
+      AppSettingsEntry.DEFAULT_TILE_ALARM_MINUTES
+    ) { it.toInt() }
+
+    val lastSelectedMinutes = findEntry(
+      entries,
+      AppSettingsEntry.KEY_LAST_SELECTED_MINUTES,
+      AppSettingsEntry.DEFAULT_LAST_SELECTED_MINUTES
+    ) { it.toInt() }
+
+    return AppSettings(tileAlarmMinutes, lastSelectedMinutes)
+  }
+
+  private suspend fun setEntry(context: Context, key: String, value: String) {
+    getAppDatabase(context)
+      .appSettingsDao()
+      .setEntry(AppSettingsEntry(key, value))
+  }
+
   suspend fun get(context: Context): AppSettings {
-    // The row does not exist until the settings are changed for the first time.
-    return getAppDatabase(context).appSettingsDao().getSettings()
-      ?: AppSettings.DEFAULT
+    val entries = getAppDatabase(context).appSettingsDao().getEntries()
+
+    return parseEntriesToSettings(entries)
   }
 
   fun getFlow(context: Context): Flow<AppSettings> {
-    return getAppDatabase(context).appSettingsDao().getSettingsFlow()
-      .map { it ?: AppSettings.DEFAULT }
+    return getAppDatabase(context)
+      .appSettingsDao()
+      .entriesFlow()
+      .map { parseEntriesToSettings(it) }
   }
 
   suspend fun getTileAlarmMinutes(context: Context): Int {
@@ -23,10 +69,18 @@ object SettingsFlow {
   }
 
   suspend fun setTileAlarmMinutes(context: Context, minutes: Int) {
-    val settings = get(context)
+    setEntry(
+      context,
+      AppSettingsEntry.KEY_TILE_ALARM_MINUTES,
+      minutes.toString()
+    )
+  }
 
-    getAppDatabase(context).appSettingsDao().setSettings(
-      settings.copy(id = AppSettings.DEFAULT_ID, tileAlarmMinutes = minutes)
+  suspend fun setLastSelectedMinutes(context: Context, minutes: Int) {
+    setEntry(
+      context,
+      AppSettingsEntry.KEY_LAST_SELECTED_MINUTES,
+      minutes.toString()
     )
   }
 }
