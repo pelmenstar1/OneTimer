@@ -23,7 +23,7 @@ fun PermissionScreen(
     Text(text = "The app needs alarm clock permission")
 
     Button(
-      modifier = Modifier.padding(top = 4.dp),
+      modifier = Modifier.padding(top = 6.dp),
       onClick = {
         onLaunchSettings()
       }

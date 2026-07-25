@@ -8,24 +8,34 @@ import android.os.Build
 import android.os.SystemClock
 import com.pelmenstar.onetimer.utils.MS_IN_MINUTE
 
-fun scheduleAlarm(context: Context, futureMinutes: Int): Boolean {
-  val manager = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
-  val durationMs = futureMinutes.toLong() * MS_IN_MINUTE
+data class ScheduledAlarmInfo(val triggerAt: Long)
 
-  if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-    if (!manager.canScheduleExactAlarms()) {
-      return false
-    }
-  }
+private fun getAlarmManager(context: Context): AlarmManager {
+  return context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
+}
 
+private fun getBroadcastPendingIntent(context: Context): PendingIntent {
   val intent = Intent(context, AlarmBroadcastReceiver::class.java)
 
-  val pendingIntent = PendingIntent.getBroadcast(
+  return PendingIntent.getBroadcast(
     context,
     0,
     intent,
     PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
   )
+}
+
+fun scheduleAlarm(context: Context, futureMinutes: Int): ScheduledAlarmInfo? {
+  val manager = getAlarmManager(context)
+  val durationMs = futureMinutes.toLong() * MS_IN_MINUTE
+
+  if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+    if (!manager.canScheduleExactAlarms()) {
+      return null
+    }
+  }
+
+  val pendingIntent = getBroadcastPendingIntent(context)
 
   val now = SystemClock.elapsedRealtime()
   val triggerAt = now + durationMs
@@ -36,5 +46,12 @@ fun scheduleAlarm(context: Context, futureMinutes: Int): Boolean {
     pendingIntent
   )
 
-  return true
+  return ScheduledAlarmInfo(triggerAt)
+}
+
+fun cancelScheduledAlarm(context: Context) {
+  val manager = getAlarmManager(context)
+  val pendingIntent = getBroadcastPendingIntent(context)
+
+  manager.cancel(pendingIntent)
 }

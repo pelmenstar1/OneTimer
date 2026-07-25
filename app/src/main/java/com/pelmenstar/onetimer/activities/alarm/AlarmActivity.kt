@@ -25,6 +25,8 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -36,10 +38,11 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.TextUnitType
 import com.pelmenstar.onetimer.R
-import com.pelmenstar.onetimer.external.alarm.scheduleAlarm
+import com.pelmenstar.onetimer.flow.AlarmFlow
 import com.pelmenstar.onetimer.ui.theme.OneTimerTheme
 import com.pelmenstar.onetimer.utils.getDefaultVibrator
 import com.pelmenstar.onetimer.utils.vibrateWaveform
+import kotlinx.coroutines.launch
 
 class AlarmActivity : ComponentActivity() {
   override fun onCreate(savedInstanceState: Bundle?) {
@@ -63,17 +66,27 @@ class AlarmActivity : ComponentActivity() {
   }
 }
 
-const val RESCHEDULE_MINUTES = 10
+private const val RESCHEDULE_MINUTES = 10
+
+private val BUTTON_BACKGROUND_COLOR = Color(0.192f, 0.098f, 0.227f, 1.0f)
 
 @Preview
 @Composable
 fun AlarmScreen(modifier: Modifier = Modifier) {
   val activity = LocalActivity.current
+  val scope = rememberCoroutineScope()
+
   val buttonModifier = Modifier
     .fillMaxHeight(1f)
     .aspectRatio(1f)
 
-  val buttonColor = Color(0.192f, 0.098f, 0.227f, 1.0f)
+  LaunchedEffect(Unit) {
+    if (activity != null) {
+      scope.launch {
+        AlarmFlow.onAlarmReceived(activity)
+      }
+    }
+  }
 
   DisposableEffect(activity) {
     val vibrator = getDefaultVibrator(activity as Context)
@@ -130,10 +143,14 @@ fun AlarmScreen(modifier: Modifier = Modifier) {
     ) {
       Button(
         modifier = buttonModifier,
-        colors = ButtonDefaults.buttonColors(containerColor = buttonColor),
+        colors = ButtonDefaults.buttonColors(containerColor = BUTTON_BACKGROUND_COLOR),
         onClick = {
-          if (activity != null) {
-            scheduleAlarm(activity, RESCHEDULE_MINUTES)
+          if (activity == null) {
+            return@Button
+          }
+
+          scope.launch {
+            AlarmFlow.schedule(activity, RESCHEDULE_MINUTES)
           }
         }) {
         Column(horizontalAlignment = Alignment.CenterHorizontally) {
@@ -153,7 +170,7 @@ fun AlarmScreen(modifier: Modifier = Modifier) {
 
       Button(
         modifier = buttonModifier,
-        colors = ButtonDefaults.buttonColors(containerColor = buttonColor),
+        colors = ButtonDefaults.buttonColors(containerColor = BUTTON_BACKGROUND_COLOR),
         onClick = {
           activity?.finish()
         }) {
