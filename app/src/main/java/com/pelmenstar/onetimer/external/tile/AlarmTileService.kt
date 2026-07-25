@@ -11,6 +11,7 @@ import android.service.quicksettings.TileService
 import com.pelmenstar.onetimer.R
 import com.pelmenstar.onetimer.activities.main.MainActivity
 import com.pelmenstar.onetimer.flow.AlarmFlow
+import com.pelmenstar.onetimer.flow.SettingsFlow
 import com.pelmenstar.onetimer.persistance.ActiveAlarmInfo
 import com.pelmenstar.onetimer.utils.formatTimeFromWallTime
 import kotlinx.coroutines.CoroutineScope
@@ -28,8 +29,6 @@ fun requestAlarmTileUpdate(context: Context) {
     context, ComponentName(context, AlarmTileService::class.java)
   )
 }
-
-private const val DEFAULT_MINUTES = 60
 
 class AlarmTileService : TileService() {
   private val scope =
@@ -54,7 +53,8 @@ class AlarmTileService : TileService() {
 
         updateTile(null)
       } else {
-        val info = AlarmFlow.schedule(context, DEFAULT_MINUTES)
+        val minutes = SettingsFlow.getTileAlarmMinutes(context)
+        val info = AlarmFlow.schedule(context, minutes)
 
         if (info != null) {
           updateTile(info)

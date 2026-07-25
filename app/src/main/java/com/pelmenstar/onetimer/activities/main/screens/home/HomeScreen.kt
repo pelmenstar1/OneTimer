@@ -18,8 +18,6 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Brush
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
@@ -28,15 +26,11 @@ import androidx.compose.ui.unit.TextUnitType
 import androidx.compose.ui.unit.dp
 import com.pelmenstar.onetimer.flow.AlarmFlow
 import com.pelmenstar.onetimer.persistance.ActiveAlarmInfo
-import com.pelmenstar.onetimer.ui.components.CircularSelect
-import com.pelmenstar.onetimer.utils.formatTime
+import com.pelmenstar.onetimer.ui.components.MIN_MINUTES
+import com.pelmenstar.onetimer.ui.components.MinutesSelect
 import com.pelmenstar.onetimer.utils.formatTimeFromWallTime
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
-
-const val MAX_HOURS = 4
-
-const val TOTAL_MINUTES = (MAX_HOURS * 60).toFloat()
 
 private sealed interface AlarmState {
   // Until we know for sure, the alarm is considered to be set.
@@ -95,35 +89,19 @@ fun HomeScreen(
 private fun AlarmSetup(
   onSchedule: (minutes: Int) -> Unit
 ) {
-  var minutes by rememberSaveable { mutableIntStateOf(1) }
+  var minutes by rememberSaveable { mutableIntStateOf(MIN_MINUTES) }
 
-  CircularSelect(
+  MinutesSelect(
     modifier = Modifier
       .fillMaxWidth(0.8f)
       .fillMaxHeight(0.5f),
-    value = minutes.toFloat(),
-    minValue = 1f,
-    maxValue = TOTAL_MINUTES,
-    step = 1f,
-    trackWidth = 25.dp,
-    progressBrush = Brush.sweepGradient(
-      listOf(Color.Magenta, Color.Red, Color.Magenta)
-    ),
-    onValueChange = { value -> minutes = value.toInt() },
-  ) {
-    Text(
-      text = formatTime(minutes),
-      style = TextStyle(
-        fontWeight = FontWeight(900),
-        fontSize = TextUnit(
-          40f,
-          TextUnitType.Sp
-        )
-      )
-    )
-  }
+    minutes = minutes,
+    onMinutesChange = { value -> minutes = value }
+  )
 
-  Button(onClick = { onSchedule(minutes) }) {
+  Button(
+    modifier = Modifier.padding(top = 10.dp),
+    onClick = { onSchedule(minutes) }) {
     Text(text = "Set an alarm")
   }
 }
