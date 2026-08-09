@@ -53,12 +53,6 @@ class MainActivity : ComponentActivity() {
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
 
-    val a = ContextCompat.checkSelfPermission(
-      this,
-      "android.permission.USE_FULL_SCREEN_INTENT"
-    )
-    println("PERMISSION: $a")
-
     enableEdgeToEdge()
     setContent {
       OneTimerTheme {

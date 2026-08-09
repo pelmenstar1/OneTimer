@@ -73,7 +73,7 @@ fun SettingsScreen() {
 
   if (isSelectingMinutes) {
     MinutesSelectSheet(
-      minutes = draftMinutes,
+      minutes = { draftMinutes },
       onMinutesChange = { value -> draftMinutes = value },
       onDismiss = { isSelectingMinutes = false },
       onConfirm = {
@@ -114,7 +114,7 @@ private fun SettingItem(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun MinutesSelectSheet(
-  minutes: Int,
+  minutes: () -> Int,
   onMinutesChange: (minutes: Int) -> Unit,
   onDismiss: () -> Unit,
   onConfirm: () -> Unit

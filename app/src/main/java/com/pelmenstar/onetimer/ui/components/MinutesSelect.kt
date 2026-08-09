@@ -2,6 +2,7 @@ package com.pelmenstar.onetimer.ui.components
 
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
@@ -26,23 +27,25 @@ const val TOTAL_MINUTES = (MAX_HOURS * 60).toFloat()
 @Composable
 fun MinutesSelect(
   modifier: Modifier,
-  minutes: Int,
+  minutes: () -> Int,
   onMinutesChange: (minutes: Int) -> Unit
 ) {
+  val progressBrush = remember {
+    Brush.sweepGradient(listOf(Color.Magenta, Color.Red, Color.Magenta))
+  }
+
   CircularSelect(
     modifier = modifier,
-    value = minutes.toFloat(),
+    value = { minutes().toFloat() },
     minValue = MIN_MINUTES.toFloat(),
     maxValue = TOTAL_MINUTES,
     step = 1f,
     trackWidth = 25.dp,
-    progressBrush = Brush.sweepGradient(
-      listOf(Color.Magenta, Color.Red, Color.Magenta)
-    ),
+    progressBrush = progressBrush,
     onValueChange = { value -> onMinutesChange(value.toInt()) },
   ) {
     Text(
-      text = formatTime(minutes),
+      text = formatTime(minutes()),
       style = TextStyle(
         fontWeight = FontWeight(900),
         fontSize = TextUnit(

@@ -110,7 +110,7 @@ private fun AlarmSetup(
     modifier = Modifier
       .fillMaxWidth(0.8f)
       .fillMaxHeight(0.5f),
-    minutes = minutes,
+    minutes = { minutes },
     onMinutesChange = { value -> minutes = value }
   )
 

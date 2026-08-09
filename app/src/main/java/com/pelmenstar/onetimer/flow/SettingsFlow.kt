@@ -2,12 +2,17 @@ package com.pelmenstar.onetimer.flow
 
 import android.content.Context
 import com.pelmenstar.onetimer.persistance.AppSettings
+import com.pelmenstar.onetimer.persistance.AppSettingsDao
 import com.pelmenstar.onetimer.persistance.AppSettingsEntry
 import com.pelmenstar.onetimer.persistance.getAppDatabase
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 
 object SettingsFlow {
+  private fun dao(context: Context): AppSettingsDao {
+    return getAppDatabase(context).appSettingsDao()
+  }
+
   private fun findEntryValue(
     entries: Array<AppSettingsEntry>,
     key: String
@@ -46,20 +51,17 @@ object SettingsFlow {
   }
 
   private suspend fun setEntry(context: Context, key: String, value: String) {
-    getAppDatabase(context)
-      .appSettingsDao()
-      .setEntry(AppSettingsEntry(key, value))
+    dao(context).setEntry(AppSettingsEntry(key, value))
   }
 
   suspend fun get(context: Context): AppSettings {
-    val entries = getAppDatabase(context).appSettingsDao().getEntries()
+    val entries = dao(context).getEntries()
 
     return parseEntriesToSettings(entries)
   }
 
   fun getFlow(context: Context): Flow<AppSettings> {
-    return getAppDatabase(context)
-      .appSettingsDao()
+    return dao(context)
       .entriesFlow()
       .map { parseEntriesToSettings(it) }
   }

@@ -3,5 +3,6 @@
 
   <style name="Theme.OneTimer" parent="android:Theme.Material.NoActionBar">
     <item name="android:windowBackground">@color/background</item>
+    <item name="android:windowSplashScreenBackground">@color/background</item>
   </style>
 </resources>

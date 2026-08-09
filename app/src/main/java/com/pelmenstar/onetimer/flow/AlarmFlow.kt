@@ -5,6 +5,7 @@ import android.util.Log
 import com.pelmenstar.onetimer.external.alarm.cancelScheduledAlarm
 import com.pelmenstar.onetimer.external.alarm.scheduleAlarm
 import com.pelmenstar.onetimer.external.tile.requestAlarmTileUpdate
+import com.pelmenstar.onetimer.persistance.ActiveAlarmDao
 import com.pelmenstar.onetimer.persistance.ActiveAlarmInfo
 import com.pelmenstar.onetimer.persistance.getAppDatabase
 import kotlinx.coroutines.flow.Flow
@@ -12,8 +13,12 @@ import kotlinx.coroutines.flow.Flow
 object AlarmFlow {
   private const val TAG = "AlarmFlow"
 
+  private fun dao(context: Context): ActiveAlarmDao {
+    return getAppDatabase(context).activeAlarmDao()
+  }
+
   suspend fun getActive(context: Context): ActiveAlarmInfo? {
-    return getAppDatabase(context).activeAlarmDao().getActiveAlarm()
+    return dao(context).getActiveAlarm()
   }
 
   /**
@@ -21,17 +26,17 @@ object AlarmFlow {
    * no matter who changed it.
    */
   fun getActiveFlow(context: Context): Flow<ActiveAlarmInfo?> {
-    return getAppDatabase(context).activeAlarmDao().getActiveAlarmFlow()
+    return dao(context).getActiveAlarmFlow()
   }
 
   suspend fun hasActiveAlarm(context: Context): Boolean {
-    return getAppDatabase(context).activeAlarmDao().activeAlarmCount() > 0
+    return dao(context).activeAlarmCount() > 0
   }
 
   suspend fun schedule(context: Context, futureMinutes: Int): ActiveAlarmInfo? {
     val scheduledInfo = scheduleAlarm(context, futureMinutes) ?: return null
 
-    val alarmDao = getAppDatabase(context).activeAlarmDao()
+    val alarmDao = dao(context)
 
     try {
       val activeInfo = ActiveAlarmInfo(
@@ -53,11 +58,6 @@ object AlarmFlow {
     }
   }
 
-  suspend fun clear(context: Context) {
-    cancelScheduledAlarm(context)
-    clearDatabase(context)
-  }
-
   private suspend fun clearDatabase(context: Context) {
     val db = getAppDatabase(context)
     val rowsDeleted = db.activeAlarmDao().clearActiveAlarm()
@@ -66,6 +66,11 @@ object AlarmFlow {
     }
 
     requestAlarmTileUpdate(context)
+  }
+
+  suspend fun clear(context: Context) {
+    cancelScheduledAlarm(context)
+    clearDatabase(context)
   }
 
   suspend fun onAlarmReceived(context: Context) {
