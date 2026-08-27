@@ -10,6 +10,9 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.compose.animation.EnterTransition
+import androidx.compose.animation.ExitTransition
+import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
@@ -100,6 +103,11 @@ class MainActivity : ComponentActivity() {
               modifier = Modifier.fillMaxSize(),
               backStack = backStack,
               onBack = { backStack.removeLastOrNull() },
+              transitionSpec = { EnterTransition.None togetherWith ExitTransition.None },
+              popTransitionSpec = { EnterTransition.None togetherWith ExitTransition.None },
+              predictivePopTransitionSpec = {
+                EnterTransition.None togetherWith ExitTransition.None
+              },
               entryProvider = entryProvider {
                 entry<HomeKey> {
                   HomeScreen(onRequirePermission = { backStack.add(PermissionKey) })
