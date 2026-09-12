@@ -5,6 +5,7 @@ import android.media.AudioAttributes
 import android.media.MediaPlayer
 import android.os.Build
 import android.os.Bundle
+import android.view.WindowManager
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.LocalActivity
 import androidx.activity.compose.setContent
@@ -48,6 +49,7 @@ class AlarmActivity : ComponentActivity() {
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
 
+    showOverKeyguard()
     enableEdgeToEdge()
     setContent {
       OneTimerTheme {
@@ -63,6 +65,21 @@ class AlarmActivity : ComponentActivity() {
         }
       }
     }
+  }
+
+  private fun showOverKeyguard() {
+    if (Build.VERSION.SDK_INT >= 27) {
+      setShowWhenLocked(true)
+      setTurnScreenOn(true)
+    } else {
+      @Suppress("DEPRECATION")
+      window.addFlags(
+        WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED or
+          WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON
+      )
+    }
+
+    window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
   }
 }
 
@@ -127,6 +144,11 @@ fun AlarmScreen(modifier: Modifier = Modifier) {
     verticalArrangement = Arrangement.SpaceEvenly,
     modifier = modifier
   ) {
+    val actionButtonColors = ButtonDefaults.buttonColors(
+      containerColor = BUTTON_BACKGROUND_COLOR,
+      contentColor = Color.White
+    )
+
     Image(
       modifier = Modifier
         .fillMaxWidth(0.8f)
@@ -143,7 +165,7 @@ fun AlarmScreen(modifier: Modifier = Modifier) {
     ) {
       Button(
         modifier = buttonModifier,
-        colors = ButtonDefaults.buttonColors(containerColor = BUTTON_BACKGROUND_COLOR),
+        colors = actionButtonColors,
         onClick = {
           if (activity == null) {
             return@Button
@@ -170,7 +192,7 @@ fun AlarmScreen(modifier: Modifier = Modifier) {
 
       Button(
         modifier = buttonModifier,
-        colors = ButtonDefaults.buttonColors(containerColor = BUTTON_BACKGROUND_COLOR),
+        colors = actionButtonColors,
         onClick = {
           activity?.finish()
         }) {

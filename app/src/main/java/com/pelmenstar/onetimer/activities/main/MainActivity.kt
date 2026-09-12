@@ -1,11 +1,5 @@
 package com.pelmenstar.onetimer.activities.main
 
-import android.app.AlarmManager
-import android.content.BroadcastReceiver
-import android.content.Context
-import android.content.Intent
-import android.content.IntentFilter
-import android.os.Build
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -23,11 +17,9 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.DisposableEffect
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
-import androidx.core.content.ContextCompat
 import androidx.navigation3.runtime.NavKey
 import androidx.navigation3.runtime.entryProvider
 import androidx.navigation3.runtime.rememberNavBackStack
@@ -36,7 +28,6 @@ import com.pelmenstar.onetimer.R
 import com.pelmenstar.onetimer.activities.main.screens.home.HomeScreen
 import com.pelmenstar.onetimer.activities.main.screens.permission.PermissionScreen
 import com.pelmenstar.onetimer.activities.main.screens.settings.SettingsScreen
-import com.pelmenstar.onetimer.external.alarm.SettingsScheduleExactAlarmContract
 import com.pelmenstar.onetimer.ui.theme.OneTimerTheme
 import kotlinx.serialization.Serializable
 
@@ -44,15 +35,12 @@ import kotlinx.serialization.Serializable
 data object HomeKey : NavKey
 
 @Serializable
-data object PermissionKey : NavKey
-
-@Serializable
 data object SettingsKey : NavKey
 
-class MainActivity : ComponentActivity() {
-  val settingsAlarmLauncher =
-    registerForActivityResult(SettingsScheduleExactAlarmContract()) {}
+@Serializable
+data object PermissionKey : NavKey
 
+class MainActivity : ComponentActivity() {
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
 
@@ -76,29 +64,6 @@ class MainActivity : ComponentActivity() {
               .fillMaxSize()
               .padding(innerPadding)
           ) {
-            if (Build.VERSION.SDK_INT >= 31) {
-              DisposableEffect(key1 = null) {
-                val broadcastReceiver = object : BroadcastReceiver() {
-                  override fun onReceive(context: Context?, intent: Intent?) {
-                    backStack.remove(PermissionKey)
-                  }
-                }
-
-                ContextCompat.registerReceiver(
-                  this@MainActivity,
-                  broadcastReceiver,
-                  IntentFilter(
-                    AlarmManager.ACTION_SCHEDULE_EXACT_ALARM_PERMISSION_STATE_CHANGED
-                  ),
-                  ContextCompat.RECEIVER_NOT_EXPORTED
-                )
-
-                onDispose {
-                  this@MainActivity.unregisterReceiver(broadcastReceiver)
-                }
-              }
-            }
-
             NavDisplay(
               modifier = Modifier.fillMaxSize(),
               backStack = backStack,
@@ -110,19 +75,17 @@ class MainActivity : ComponentActivity() {
               },
               entryProvider = entryProvider {
                 entry<HomeKey> {
-                  HomeScreen(onRequirePermission = { backStack.add(PermissionKey) })
+                  HomeScreen(
+                    onRequirePermission = { backStack.add(PermissionKey) }
+                  )
                 }
 
                 entry<SettingsKey> {
                   SettingsScreen()
                 }
 
-                if (Build.VERSION.SDK_INT >= 31) {
-                  entry<PermissionKey> {
-                    PermissionScreen(onLaunchSettings = {
-                      settingsAlarmLauncher.launch(Unit)
-                    })
-                  }
+                entry<PermissionKey> {
+                  PermissionScreen(onGranted = { backStack.remove(PermissionKey) })
                 }
               }
             )

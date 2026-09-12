@@ -40,9 +40,13 @@
 
     <activity
       android:name=".activities.alarm.AlarmActivity"
+      android:excludeFromRecents="true"
       android:exported="true"
       android:label="@string/title_activity_alarm"
+      android:launchMode="singleTask"
+      android:showWhenLocked="true"
       android:theme="@style/Theme.OneTimer"
+      android:turnScreenOn="true"
       android:windowSoftInputMode="adjustResize" />
 
     <service

@@ -24,6 +24,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.TextUnitType
 import androidx.compose.ui.unit.dp
+import com.pelmenstar.onetimer.external.alarm.hasAlarmPermissions
 import com.pelmenstar.onetimer.flow.AlarmFlow
 import com.pelmenstar.onetimer.flow.SettingsFlow
 import com.pelmenstar.onetimer.persistance.ActiveAlarmInfo
@@ -83,7 +84,9 @@ fun HomeScreen(
         initialMinutes = currentState.lastSelectedMinutes,
         onSchedule = { minutes ->
           scope.launch {
-            if (AlarmFlow.schedule(context, minutes) != null) {
+            if (hasAlarmPermissions(context) &&
+              AlarmFlow.schedule(context, minutes) != null
+            ) {
               SettingsFlow.setLastSelectedMinutes(context, minutes)
             } else {
               onRequirePermission()
