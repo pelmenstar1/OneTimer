@@ -13,11 +13,11 @@ import androidx.compose.ui.unit.TextUnitType
 import androidx.compose.ui.unit.dp
 import com.pelmenstar.onetimer.utils.formatTime
 
-const val MAX_HOURS = 4
+private const val MAX_HOURS = 4
 
 const val MIN_MINUTES = 1
 
-const val TOTAL_MINUTES = (MAX_HOURS * 60).toFloat()
+private const val TOTAL_MINUTES = (MAX_HOURS * 60).toFloat()
 
 /**
  * A circular selector of an amount of minutes, that shows the selected amount in its center.
@@ -38,6 +38,7 @@ fun MinutesSelect(
     modifier = modifier,
     value = { minutes().toFloat() },
     minValue = MIN_MINUTES.toFloat(),
+    minVisibleValue = 0f,
     maxValue = TOTAL_MINUTES,
     step = 1f,
     trackWidth = 25.dp,

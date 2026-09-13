@@ -20,29 +20,10 @@ import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.input.pointer.PointerInputChange
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.unit.Dp
-import androidx.compose.ui.util.lerp
+import com.pelmenstar.onetimer.utils.inverseLerp
 import com.pelmenstar.onetimer.utils.normalizeValueBetween
 import kotlin.math.PI
 import kotlin.math.atan2
-import kotlin.math.round
-
-@Stable
-fun alignMultipleTo(value: Float, step: Float): Float {
-  if (step.isNaN()) {
-    return value
-  }
-
-  val count = round(value / step)
-
-  return step * count
-}
-
-@Stable
-fun inverseLerp(fraction: Float, min: Float, max: Float, step: Float): Float {
-  val result = lerp(min, max, fraction)
-
-  return alignMultipleTo(result, step)
-}
 
 @Stable
 fun getValueFromPointerPosition(position: Offset, size: Float): Float {
@@ -60,6 +41,7 @@ fun CircularSelect(
   modifier: Modifier,
   value: () -> Float,
   minValue: Float = 0.0f,
+  minVisibleValue: Float = minValue,
   maxValue: Float = 1.0f,
   step: Float = Float.NaN,
   trackColor: Color = Color.Gray,
@@ -86,7 +68,7 @@ fun CircularSelect(
             fun processChange(change: PointerInputChange) {
               val value = getValueFromPointerPosition(change.position, diameter)
               val denormalizedValue =
-                inverseLerp(value, minValue, maxValue, step)
+                inverseLerp(value, minValue, minVisibleValue, maxValue, step)
 
               if (denormalizedValue != lastValue) {
                 lastValue = denormalizedValue
@@ -98,7 +80,7 @@ fun CircularSelect(
             }
 
             // Only the pointer that has started the gesture is tracked: otherwise the pointers
-            // of a multi-touch fight over the value, each one undoing the change of another.
+            // of a multitouch fight over the value, each one undoing the change of another.
             val down = awaitFirstDown(requireUnconsumed = false)
             processChange(down)
 
@@ -106,7 +88,8 @@ fun CircularSelect(
           }
         }) {
 
-      val normalizedValue = normalizeValueBetween(value(), minValue, maxValue)
+      val normalizedValue =
+        normalizeValueBetween(value(), minVisibleValue, maxValue)
       val trackWidthPx = trackWidth.toPx()
 
       this.drawArc(
