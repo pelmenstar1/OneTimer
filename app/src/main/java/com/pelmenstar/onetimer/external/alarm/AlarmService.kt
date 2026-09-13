@@ -6,6 +6,7 @@ import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.app.PendingIntent
 import android.app.Service
+import android.content.Context
 import android.content.Intent
 import android.content.pm.ServiceInfo
 import android.os.Build
@@ -77,5 +78,20 @@ class AlarmService : Service() {
     private const val NOTIFICATION_ID = 1001
 
     private const val CHANNEL_ID = "alarm_channel"
+
+    fun intent(context: Context): Intent {
+      return Intent(context, AlarmService::class.java)
+    }
+
+    fun stop(context: Context) {
+      context.stopService(intent(context))
+    }
+
+    fun cancelNotification(context: Context) {
+      val service =
+        context.getSystemService(NOTIFICATION_SERVICE) as NotificationManager
+
+      service.cancel(NOTIFICATION_ID)
+    }
   }
 }

@@ -28,11 +28,11 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.compose.LifecycleResumeEffect
-import com.pelmenstar.onetimer.external.alarm.SettingsFullScreenIntentContract
-import com.pelmenstar.onetimer.external.alarm.SettingsScheduleExactAlarmContract
 import com.pelmenstar.onetimer.external.alarm.canPostNotifications
 import com.pelmenstar.onetimer.external.alarm.canScheduleExactAlarms
 import com.pelmenstar.onetimer.external.alarm.canUseFullScreenIntent
+import com.pelmenstar.onetimer.external.contract.SettingsFullScreenIntentContract
+import com.pelmenstar.onetimer.external.contract.SettingsScheduleExactAlarmContract
 
 private enum class MissingPermission {
   Notifications,

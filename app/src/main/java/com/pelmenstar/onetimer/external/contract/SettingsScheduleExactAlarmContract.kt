@@ -1,4 +1,4 @@
-package com.pelmenstar.onetimer.external.alarm
+package com.pelmenstar.onetimer.external.contract
 
 import android.app.Activity
 import android.content.Context
@@ -6,7 +6,6 @@ import android.content.Intent
 import android.provider.Settings
 import androidx.activity.result.contract.ActivityResultContract
 import androidx.annotation.RequiresApi
-import androidx.core.net.toUri
 
 class SettingsScheduleExactAlarmContract :
   ActivityResultContract<Unit, Boolean>() {
@@ -16,7 +15,7 @@ class SettingsScheduleExactAlarmContract :
     input: Unit
   ): Intent {
     return Intent(Settings.ACTION_REQUEST_SCHEDULE_EXACT_ALARM).apply {
-      data = "package:com.pelmenstar.onetimer".toUri()
+      data = packageUri()
     }
   }
 

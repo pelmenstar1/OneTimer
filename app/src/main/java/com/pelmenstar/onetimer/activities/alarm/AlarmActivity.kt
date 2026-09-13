@@ -39,10 +39,11 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.TextUnitType
 import com.pelmenstar.onetimer.R
+import com.pelmenstar.onetimer.external.alarm.AlarmService
+import com.pelmenstar.onetimer.external.vibrator.getDefaultVibrator
+import com.pelmenstar.onetimer.external.vibrator.vibrateWaveform
 import com.pelmenstar.onetimer.flow.AlarmFlow
 import com.pelmenstar.onetimer.ui.theme.OneTimerTheme
-import com.pelmenstar.onetimer.utils.getDefaultVibrator
-import com.pelmenstar.onetimer.utils.vibrateWaveform
 import kotlinx.coroutines.launch
 
 class AlarmActivity : ComponentActivity() {
@@ -50,6 +51,10 @@ class AlarmActivity : ComponentActivity() {
     super.onCreate(savedInstanceState)
 
     showOverKeyguard()
+
+    AlarmService.stop(this)
+    AlarmService.cancelNotification(this)
+
     enableEdgeToEdge()
     setContent {
       OneTimerTheme {

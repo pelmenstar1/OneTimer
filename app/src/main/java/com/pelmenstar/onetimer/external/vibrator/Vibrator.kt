@@ -1,4 +1,4 @@
-package com.pelmenstar.onetimer.utils
+package com.pelmenstar.onetimer.external.vibrator
 
 import android.content.Context
 import android.os.Build
